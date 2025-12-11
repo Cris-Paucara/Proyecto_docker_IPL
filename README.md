@@ -1,263 +1,259 @@
-# Proyecto Integrador - Docker & Kubernetes
+**Alumno** Ivan Cristhian Paucara Laura
+**Fecha:** 10/12/2025
+**Curso:** Docker & Kubernetes - i-Quattro
 
-Aplicación full-stack progresiva que evoluciona clase a clase, desde una API REST simple hasta un sistema completo desplegado en Kubernetes con microservicios, base de datos, cache, frontend, Ingress y HPA.
+## Parte 1: Setup del Ambiente
+  **Ambiente utilizado:**
+   - VirtualBox
+   - Nombre de VM/Instancia: [Ivan-Cristhian-Paucara-Laura-k8s]
+   - Sistema operativo: Ubuntu 24.04 LTS
+   - Recursos: 4GB RAM, 2 CPU cores
+   - Red configurada: [NAT/Bridged o tipo de red en cloud]
+   - Rango MetalLB: 10.0.0.100-10.0.0.110
 
-**Autor:** Alejandro Fiengo ([alefiengo.dev](https://alefiengo.dev))
-**Curso:** Docker & Kubernetes - Contenedores y Orquestación en la Práctica
-**Institución:** i-Quattro
+### Screenshots
+## 1. Preparar ambiente
 
----
+### 1.1 Crear Máquina Virtual
 
-## Inicio Rápido
-
-Elige tu plataforma de despliegue:
-
-### Docker Compose (Clases 2-5)
-```bash
-cd docker-compose/
-docker compose up -d --build
-```
-**[Guía completa Docker Compose](docker-compose/README.md)**
-
-### Kubernetes (Clases 6-8)
-```bash
-cd k8s/
-# Seguir guía de despliegue según tu cluster
-```
-**[Guía de Despliegue Kubernetes (minikube)](k8s/DEPLOYMENT_GUIDE.md)**
-**[Guía de Despliegue Kubernetes (microk8s)](k8s/DEPLOYMENT_GUIDE_MICROK8S.md)**
-
----
-
-## Evolución del Proyecto
-
-| Versión | Tag | Stack | Qué se agrega |
-|---------|-----|-------|---------------|
-| **v1.0** | `v1.0-clase2` | Spring Boot | REST API in-memory con Dockerfile multi-stage |
-| **v1.1** | `v1.1-clase3` | + PostgreSQL | Persistencia con Spring Data JPA + Docker Compose |
-| **v1.2** | `v1.2-clase4` | + Redis + Angular + Kong | Cache, frontend SPA, API Gateway |
-| **v1.3** | `v1.3-clase5` | + Seguridad | Trivy scan, optimizaciones, non-root users |
-| **v2.0** | `v2.0-clases6-7-8` | **Migración completa a Kubernetes** | Deployments, Services, ConfigMaps, Secrets, StatefulSet, Ingress, HPA |
-
----
-
-## Arquitectura
-
-### Docker Compose (v1.2 - v1.3)
-
-```
-Cliente → Angular :4200 → Kong :8000 → Spring Boot :8080
-                                              |
-                                              +-- Redis :6379
-                                              +-- PostgreSQL :5432
-```
-
-**[Ver arquitectura detallada Docker Compose](ARCHITECTURE.md#arquitectura-docker-compose-v12)**
-
-### Kubernetes (v2.0)
-
-```
-Cliente → Ingress :80 → Frontend Pods (nginx BFF)
-                   |         |
-                   |         +-- /api/* → API Pods (2-5 HPA)
-                   |                           |
-                   +-- /api/* → API Service    +-- Redis
-                                               +-- PostgreSQL (StatefulSet + PVC)
-```
-
-**[Ver arquitectura detallada Kubernetes](ARCHITECTURE.md#arquitectura-kubernetes-v20)**
-
----
-
-## Stack Tecnológico
-
-### Backend
-- **Spring Boot** 3.5.6 (Java 17)
-- **PostgreSQL** 15 (base de datos)
-- **Redis** 7 (cache)
-- **Spring Data JPA** (ORM)
-- **Spring Cache** (abstraction)
-- **Spring Actuator** (metrics/health)
-
-### Frontend
-- **Angular** 17+
-- **nginx** (servidor + BFF proxy)
-
-### Infraestructura
-
-#### Docker Compose
-- **Kong** 3.4 (API Gateway)
-- **Docker Compose** (orquestación)
-- Multi-stage builds
-- Non-root users
-
-#### Kubernetes
-- **Deployments** + **Services**
-- **StatefulSet** (PostgreSQL con persistencia)
-- **ConfigMaps** + **Secrets**
-- **NGINX Ingress** (routing HTTP)
-- **HPA** (Horizontal Pod Autoscaler)
-- **Health Probes** (liveness, readiness, startup)
-- **BFF Pattern** (nginx proxy en frontend)
-
----
-
-## Endpoints de la API
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/` | Página de bienvenida |
-| GET | `/api/greeting` | Mensaje de saludo |
-| GET | `/api/info` | Información de la aplicación |
-| GET | `/api/users` | Listar usuarios (con cache) |
-| GET | `/api/users/{id}` | Obtener usuario por ID |
-| POST | `/api/users` | Crear usuario |
-| PUT | `/api/users/{id}` | Actualizar usuario |
-| DELETE | `/api/users/{id}` | Eliminar usuario |
-| GET | `/actuator/health` | Health check |
-| GET | `/actuator/health/liveness` | Liveness probe (K8s) |
-| GET | `/actuator/health/readiness` | Readiness probe (K8s) |
-
----
-
-## Documentación
-
-### Guías de Despliegue
-- **[Docker Compose](docker-compose/README.md)** - Despliegue con Docker Compose (v1.2-v1.3)
-- **[Kubernetes (minikube)](k8s/DEPLOYMENT_GUIDE.md)** - Guía paso a paso para minikube
-- **[Kubernetes (microk8s)](k8s/DEPLOYMENT_GUIDE_MICROK8S.md)** - Guía paso a paso para microk8s
-
-### Documentación Técnica
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Diagramas de arquitectura, flujos de datos y decisiones de diseño
-- **[SECURITY.md](SECURITY.md)** - Buenas prácticas de seguridad y escaneo con Trivy (v1.3)
-
----
-
-## Trabajar con Tags
-
-Este proyecto usa tags de Git para cada versión del curso:
+### 1.2 Instalar MicroK8s
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/alefiengo/proyecto-integrador-docker-k8s.git
+# Actualizar sistema
+sudo apt update && sudo apt upgrade -y
+
+# Actualizar sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar microk8s
+sudo snap install microk8s --classic
+
+# Agregar usuario al grupo
+sudo usermod -a -G microk8s $USER
+sudo chown -f -R $USER ~/.kube
+newgrp microk8s
+
+# Verificar instalación
+microk8s status --wait-ready
+
+# Crear alias (opcional pero recomendado)
+echo "alias kubectl='microk8s kubectl'" >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 1.3 Habilitar Addons
+
+```bash
+# Habilitar addons necesarios
+microk8s enable dns
+microk8s enable storage
+microk8s enable ingress
+microk8s enable metrics-server
+
+# Habilitar MetalLB (reemplaza el rango con IPs de tu red local)
+microk8s enable metallb:10.0.0.100-10.0.0.110
+
+# Verificar que todos estén activos
+microk8s status
+```
+### 1.4 Instalar Git y Docker
+
+```bash
+# Git
+sudo apt install git -y
+
+# Docker
+sudo apt install docker.io -y
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Verificar instalación de Docker
+docker --version
+docker run hello-world
+
+# Login en Docker Hub (necesario para push)
+docker login
+# Ingresa tu usuario y password de Docker Hub
+```
+
+### 1.5 Obtener y Desplegar Proyecto Integrador v2.0
+
+```bash
+# Descargar el archivo .zip desde Moodle y extraerlo
+unzip proyecto-integrador-v2.0.zip
 cd proyecto-integrador-docker-k8s
 
-# Ver todas las versiones disponibles
-git tag
+# Inicializar repositorio Git local (para tus cambios v2.1 y v2.2)
+git init
+git add .
+git commit -m "add: proyecto integrador v2.0 base"
 
-# Checkout a una versión específica
-git checkout v1.0-clase2    # Versión básica (Clase 2)
-git checkout v1.1-clase3    # Con PostgreSQL (Clase 3)
-git checkout v1.2-clase4    # Con Redis, Angular, Kong (Clase 4)
-git checkout v1.3-clase5    # Con seguridad (Clase 5)
-git checkout v2.0-clases6-7-8  # Kubernetes completo (Clases 6-8)
+#DESPLIEGUE PROYECTO INTEGRADO v2.0
+#  Verificar que microk8s esté corriendo
+microk8s status
 
-# Comparar cambios entre versiones
-git diff v1.2-clase4 v1.3-clase5
-```
+# Verificar conectividad del cluster
+microk8s kubectl cluster-info
 
----
+# Habilitar Ingress Controller
 
-## Verificación Rápida
+microk8s enable ingress
 
-### Docker Compose
-```bash
-# Levantar servicios
-cd docker-compose/
-docker compose up -d
+**Verificar:**
+kubectl get pods -n ingress
 
-# Verificar que todo funciona
-curl http://localhost:8000/api/users  # Via Kong
-curl http://localhost:4200            # Frontend
+# Habilitar Metrics Server (para HPA)
 
-# Ver logs
-docker compose logs -f app
-```
+microk8s enable metrics-server
 
-### Kubernetes
-```bash
-# Desplegar
+**Verificar:**
+kubectl get deployment metrics-server -n kube-system
+
+# Habilitar DNS (si no está habilitado)
+microk8s enable dns
+
+# Habilitar StorageClass
+microk8s enable storage
+
+**Verificar StorageClass**
+kubectl get storageclass
+
+# Habilitar MetalLB (Opcional pero recomendado)
+# Habilitar MetalLB con un rango de IPs de tu red local
+microk8s enable metallb:192.168.1.200-192.168.1.210
+
+**Verificar:**
+kubectl get ipaddresspool -n metallb-system
+
+###### Preparar las Imágenes Docker
+#- alefiengo/springboot-api:v2.0
+#- alefiengo/angular-frontend:v2.0
+#- postgres:15-alpine
+#- redis:7-alpine
+
+## Paso 0: Namespace
 cd k8s/
-kubectl apply -f 00-namespace/
-kubectl apply -f 01-configmaps/
-kubectl apply -f 02-secrets/
-# ... (ver guía completa)
+kubectl apply -f 00-namespace/namespace.yaml
 
-# Verificar
+**Verificar:**
+kubectl get namespace proyecto-integrador
+
+
+## Paso 1: Configuración (ConfigMaps y Secrets)
+
+kubectl apply -f 01-configmaps/api-config.yaml
+kubectl apply -f 01-configmaps/frontend-config.yaml
+kubectl apply -f 02-secrets/postgres-secret.yaml
+
+**Verificar:**
+kubectl get configmaps -n proyecto-integrador
+kubectl get secrets -n proyecto-integrador
+
+## Paso 2: Base de Datos (PostgreSQL con StatefulSet)
+
+**Nota:** Los manifests están organizados por tipo de recurso (storage, databases), no por orden de aplicación. Los números de carpeta son solo para organización.
+
+### 2.1 Crear Headless Service
+
+kubectl apply -f 04-databases/postgres-headless.yaml
+
+**Verificar:**
+kubectl get svc -n proyecto-integrador | grep postgres
+
+### 2.2 Crear StatefulSet con PersistentVolumeClaim
+
+kubectl apply -f 03-storage/postgres-statefulset.yaml
+
+**Verificar:**
+kubectl get statefulset -n proyecto-integrador
+kubectl get pods -n proyecto-integrador | grep postgres
+kubectl get pvc -n proyecto-integrador
+
+### 2.3 Esperar a que PostgreSQL esté listo
+
+kubectl wait --for=condition=ready --timeout=120s pod/postgres-0 -n proyecto-integrador
+
+# Verificar logs
+kubectl logs -f postgres-0 -n proyecto-integrador
+
+## Paso 3: Cache (Redis)
+
+kubectl apply -f 04-databases/redis-deployment.yaml
+kubectl apply -f 04-databases/redis-service.yaml
+
+
+**Verificar:**
+
+kubectl get deployment redis -n proyecto-integrador
+kubectl get pods -n proyecto-integrador | grep redis
+
+
+**Esperar a que esté listo:**
+
+kubectl wait --for=condition=available --timeout=60s deployment/redis -n proyecto-integrador
+
+## Paso 4: Backend (Spring Boot API)
+
+### 4.1 Desplegar API
+
+kubectl apply -f 05-backend/api-deployment.yaml
+kubectl apply -f 05-backend/api-service.yaml
+
+
+**Verificar:**
+kubectl get deployment api -n proyecto-integrador
+kubectl get pods -n proyecto-integrador | grep api
+kubectl get svc api-service -n proyecto-integrador
+
+### 4.2 Esperar a que la API esté lista (puede tomar 2-3 minutos)
+
+kubectl wait --for=condition=available --timeout=180s deployment/api -n proyecto-integrador
+
+## Paso 5: Frontend (Angular)
+
+kubectl apply -f 06-frontend/frontend-deployment.yaml
+kubectl apply -f 06-frontend/frontend-service.yaml
+
+
+**Verificar:**
+kubectl get deployment frontend -n proyecto-integrador
+kubectl get pods -n proyecto-integrador | grep frontend
+
+**Esperar:**
+kubectl wait --for=condition=available --timeout=60s deployment/frontend -n proyecto-integrador
+
+## Paso 6: Ingress (Routing HTTP)
+
+kubectl apply -f 07-ingress/app-ingress.yaml
+
+**Verificar:**
+kubectl get ingress -n proyecto-integrador
+
+## Paso 7: HPA (Horizontal Pod Autoscaler)
+
+kubectl apply -f 05-backend/api-hpa.yaml
+
+**Verificar:**
+kubectl get hpa -n proyecto-integrador
+
+## Verificación Final: Estado de Todos los Recursos
+
 kubectl get all -n proyecto-integrador
 
-# Port-forward para acceder
-kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80
+**Verificar PVC:**
+kubectl get pvc -n proyecto-integrador
 
-# Acceder
-curl http://localhost:8080/api/users
-curl http://localhost:8080/           # Frontend
+**Verificar Ingress:**
+kubectl get ingress -n proyecto-integrador
+
+**Verificar HPA:**
+kubectl get hpa -n proyecto-integrador
+
+**Verificar que el Ingress Controller esté corriendo:**
+kubectl get pods -n ingress
+
+
 ```
+### 1.6 Desplegar y Verificar Funcionamiento del Proyecto v2.0 Base
 
----
-
-## Desarrollo
-
-### Requisitos Previos
-
-- **Docker** Desktop o Docker Engine
-- **Docker Compose** v2
-- **Java** 17+
-- **Maven** 3.9+
-- **Node.js** 18+ (para Angular)
-
-### Kubernetes (adicional)
-- **minikube** o **microk8s** o cluster cloud
-- **kubectl**
-- **Helm** 3+ (opcional)
-
-### Construir Imágenes
-
-```bash
-# Backend
-docker build -t alefiengo/springboot-api:v2.0 .
-
-# Frontend
-docker build -t alefiengo/angular-frontend:v2.0 ./frontend/
-
-# Publicar a Docker Hub (opcional)
-docker login
-docker push alefiengo/springboot-api:v2.0
-docker push alefiengo/angular-frontend:v2.0
-```
-
----
-
-## 🤝 Contribuir
-
-Este es un proyecto educativo para el curso de Docker & Kubernetes. Si encuentras errores o mejoras:
-
-1. Haz fork del proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/mejora`)
-3. Commit tus cambios (`git commit -m 'feat: agregar mejora'`)
-4. Push a la rama (`git push origin feature/mejora`)
-5. Abre un Pull Request
-
----
-
-## 📝 Licencia
-
-Este proyecto es material educativo desarrollado por Alejandro Fiengo para el curso de Docker & Kubernetes en i-Quattro.
-
----
-
-## 📞 Contacto
-
-- **Autor:** Alejandro Fiengo
-- **Website:** [alefiengo.dev](https://alefiengo.dev)
-- **GitHub:** [@alefiengo](https://github.com/alefiengo)
-- **Curso:** Docker & Kubernetes - i-Quattro
-
----
-
-## Recursos
-
-- [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-- [Docker Documentation](https://docs.docker.com/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Angular Documentation](https://angular.io/docs)
+### 
