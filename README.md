@@ -12,7 +12,9 @@
    - Rango MetalLB: 10.0.0.100-10.0.0.110
 
 ##ScreenShots
+
 ![microk8s status](assets/2025-12-11_09-37-10.png)
+
 ![Verificación ambiente final](assets/2025-12-11_09-39-38.png)
 
 ## 1. Preparar ambiente
@@ -260,4 +262,5 @@ kubectl get pods -n ingress
 ### 1.6 Desplegar y Verificar Funcionamiento del Proyecto v2.0 Base
 
 ### 
+
 
